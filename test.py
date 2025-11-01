@@ -91,7 +91,7 @@ if st.session_state.timer_active:
         time.sleep(1)
         
         # 스크립트 마지막에 도달했으므로 1초 후 자동 재실행
-        st.experimental_rerun() 
+        st.rerun()
         # (참고: 최신 Streamlit은 st.rerun()이지만, 
         #  호환성을 위해 experimental_rerun()도 유효합니다.)
 
