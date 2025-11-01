@@ -1,118 +1,108 @@
 import streamlit as st
-import time
-from datetime import datetime, timedelta
+from datetime import date, timedelta
 
-# -------------------------------------------------------------------
-# 1. 세션 상태(Session State) 초기화
-# -------------------------------------------------------------------
-# 스트림릿은 스크립트를 위에서 아래로 재실행하므로,
-# 타이머의 상태를 'st.session_state'에 저장해야 합니다.
+# --- 페이지 설정 ---
+st.set_page_config(
+    page_title="최고의 D-day 계산기",
+    page_icon="📅",
+    layout="centered"
+)
 
-# 'timer_active': 타이머가 현재 실행 중인지 (True/False)
-if 'timer_active' not in st.session_state:
-    st.session_state.timer_active = False
+# --- 세션 상태 초기화 ---
+# 'target_date'와 'dday_title'은 사용자가 설정한 값, 'mode'는 계산 모드
+if 'target_date' not in st.session_state:
+    st.session_state.target_date = date.today() + timedelta(days=30)
+if 'dday_title' not in st.session_state:
+    st.session_state.dday_title = "D-day 목표를 설정하세요"
+if 'mode' not in st.session_state:
+    st.session_state.mode = "D-day 모드 (남은 일수)"
 
-# 'end_time': 타이머가 종료되어야 하는 정확한 시간
-if 'end_time' not in st.session_state:
-    st.session_state.end_time = None
+# --- 기능 1: 리셋 함수 ---
+def reset_settings():
+    """날짜, 제목, 모드를 기본값으로 초기화하는 함수"""
+    st.session_state.target_date = date.today() + timedelta(days=30)
+    st.session_state.dday_title = "D-day 목표를 설정하세요"
+    st.session_state.mode = "D-day 모드 (남은 일수)"
+    st.experimental_rerun() # 리셋 후 페이지 새로고침
 
-# 'notified': 알림이 이미 표시되었는지 (True/False)
-# (타이머 종료 후 재실행 시 알림이 반복되는 것을 방지)
-if 'notified' not in st.session_state:
-    st.session_state.notified = False
+# --- 사이드바 및 설정 UI ---
+with st.sidebar:
+    st.header("⚙️ D-day 설정")
 
-# -------------------------------------------------------------------
-# 2. 콜백 함수 (버튼 로직)
-# -------------------------------------------------------------------
+    # 기능: D-day 이름/목표 설정
+    st.session_state.dday_title = st.text_input(
+        "D-day 이름/목표", 
+        st.session_state.dday_title,
+        key="input_title_key"
+    )
 
-def start_timer(minutes):
-    """타이머 시작 콜백"""
-    st.session_state.timer_active = True
-    st.session_state.end_time = datetime.now() + timedelta(minutes=minutes)
-    st.session_state.notified = False  # 새 타이머 시작 시 알림 상태 초기화
+    # 기능: 날짜 설정
+    st.session_state.target_date = st.date_input(
+        "날짜를 선택하세요", 
+        st.session_state.target_date, 
+        key="input_date_key"
+    )
 
-def reset_timer():
-    """타이머 초기화 콜백"""
-    st.session_state.timer_active = False
-    st.session_state.end_time = None
-    st.session_state.notified = False
+    # 기능: D-day 종류 선택 (카운트 방식)
+    st.session_state.mode = st.radio(
+        "D-day 계산 모드",
+        ["D-day 모드 (남은 일수)", "Day Count 모드 (경과 일수)"],
+        key="input_mode_key"
+    )
 
-# -------------------------------------------------------------------
-# 3. UI 레이아웃
-# -------------------------------------------------------------------
-
-st.title("👨‍💻 Streamlit Timer")
-st.write("스트림릿 세션 상태를 활용한 타이머입니다.")
-
-# 3-1. 시간 설정 버튼 (가로 정렬)
-cols = st.columns(4)
-with cols[0]:
-    st.button("3분", on_click=start_timer, args=(3,), use_container_width=True)
-with cols[1]:
-    st.button("5분", on_click=start_timer, args=(5,), use_container_width=True)
-with cols[2]:
-    st.button("10분", on_click=start_timer, args=(10,), use_container_width=True)
-with cols[3]:
-    st.button("15분", on_click=start_timer, args=(15,), use_container_width=True)
-
-# 3-2. 초기화 버튼
-st.button("초기화 (Reset)", on_click=reset_timer, use_container_width=True)
-
-st.divider()
-
-# 3-3. 타이머 및 알림 표시 영역
-# st.empty()를 사용하여 이 영역만 동적으로 업데이트합니다.
-timer_placeholder = st.empty()
-notification_placeholder = st.empty()
-
-# -------------------------------------------------------------------
-# 4. 메인 타이머 로직
-# -------------------------------------------------------------------
-
-if st.session_state.timer_active:
-    # 타이머가 활성화된 경우
+    st.markdown("---")
     
-    # 남은 시간 계산
-    remaining_time = st.session_state.end_time - datetime.now()
-    
-    if remaining_time.total_seconds() > 0:
-        # 4-1. 시간이 남았을 때
-        
-        # 남은 시간(분, 초) 계산
-        mins, secs = divmod(int(remaining_time.total_seconds()), 60)
-        timer_display = f"{mins:02d}:{secs:02d}"
-        
-        # st.metric을 사용해 시간 표시
-        timer_placeholder.metric("⏳ 남은 시간", timer_display)
-        
-        # 1초 대기. 
-        # 중요: 이 sleep 중 '초기화' 버튼이 눌리면
-        # Streamlit이 sleep을 중단하고 스크립트를 재실행합니다.
-        time.sleep(1)
-        
-        # 스크립트 마지막에 도달했으므로 1초 후 자동 재실행
-        st.rerun()
-        # (참고: 최신 Streamlit은 st.rerun()이지만, 
-        #  호환성을 위해 experimental_rerun()도 유효합니다.)
+    # 기능: 리셋 기능
+    st.button("🔄 설정 초기화 (리셋)", on_click=reset_settings, use_container_width=True)
 
+
+# --- 메인 페이지 로직 ---
+today = date.today()
+target_date = st.session_state.target_date
+
+# 날짜 차이 계산 (timedelta 객체)
+delta = target_date - today
+
+# --- 결과 출력 ---
+st.title("🌟 D-day 계산기")
+st.header(st.session_state.dday_title)
+st.markdown("---")
+
+if st.session_state.mode == "D-day 모드 (남은 일수)":
+    
+    # 목표 날짜가 오늘 이후인 경우 (D-day)
+    if delta.days >= 0:
+        d_day_num = delta.days
+        st.subheader(f"D-day까지 :blue[**{d_day_num}**] 일 남았습니다.")
+        
+        # D-day 당일 (오늘)
+        if d_day_num == 0:
+            st.success(f"🎉 **D-Day**입니다! 오늘이 바로 :green[{st.session_state.dday_title}] 날짜입니다.")
+        else:
+            st.info(f"목표 날짜: **{target_date.strftime('%Y년 %m월 %d일')}**")
+            
+    # 목표 날짜가 오늘 이전인 경우 (D-day가 지났음)
     else:
-        # 4-2. 시간 만료
-        timer_placeholder.metric("⏳ 남은 시간", "00:00")
-        
-        # 알림을 아직 안 띄웠다면
-        if not st.session_state.notified:
-            notification_placeholder.success("⏰ 시간이 만료되었습니다!")
-            st.balloons()
-            st.session_state.notified = True  # 알림 상태 변경
+        d_day_num = abs(delta.days)
+        st.error(f"D-day가 :red[**{d_day_num}**] 일 지났습니다. 다음 목표를 설정해보세요!")
+        st.info(f"지나간 목표 날짜: **{target_date.strftime('%Y년 %m월 %d일')}**")
 
-        # 타이머 상태 비활성화
-        st.session_state.timer_active = False
-
-else:
-    # 5. 타이머가 비활성 상태일 때
-    timer_placeholder.metric("⏳ 남은 시간", "00:00")
+elif st.session_state.mode == "Day Count 모드 (경과 일수)":
     
-    # 만약 '초기화'가 아닌 '만료'로 인해 비활성화된 것이라면
-    # 알림 메시지를 유지합니다.
-    if st.session_state.notified:
-        notification_placeholder.success("⏰ 시간이 만료되었습니다!")
+    # 시작 날짜가 오늘 이전인 경우 (Day Count: +N일)
+    if delta.days <= 0:
+        day_count = abs(delta.days) + 1 # 당일 포함 계산
+        st.subheader(f"시작일로부터 :green[**+{day_count}**] 일째입니다.")
+        st.info(f"시작 날짜: **{target_date.strftime('%Y년 %m월 %d일')}**")
+        
+        # 경과 일수 1일째 (오늘 시작)
+        if day_count == 1:
+            st.success(f"✨ **오늘**이 :green[{st.session_state.dday_title}]의 시작일입니다.")
+            
+    # 시작 날짜가 오늘 이후인 경우
+    else:
+        st.warning(f"아직 시작일이 아닙니다. 시작일까지 :orange[**{delta.days}**] 일 남았습니다.")
+        st.info(f"시작 예정 날짜: **{target_date.strftime('%Y년 %m월 %d일')}**")
+
+st.markdown("---")
+st.caption(f"현재 날짜: {today.strftime('%Y년 %m월 %d일')}")
