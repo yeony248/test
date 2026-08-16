@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+
+# bulkvid 결과물 / 작업 파일
+out/
+.work/
+.cache/
+
+# 실제 상품 데이터와 소재는 커밋하지 않는다 (예시 파일만 관리)
+data/products.csv
+assets/images/*.jpg
+assets/images/*.jpeg
+assets/images/*.png
+assets/bgm/*
+!assets/bgm/README.md

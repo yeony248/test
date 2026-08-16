@@ -1,0 +1,4 @@
+id,name,hook,domestic_price,deal_price,currency,points,cta,link,images,tags
+camp-lamp,감성 캠핑 랜턴,국내 89000원짜리 이 랜턴|직구하면 얼마게요,89000,21900,원,밝기 3단계 무단 조절|USB-C 충전 8시간 사용|IPX4 생활방수라 비 와도 OK,프로필 링크에서 바로 주문 가능해요,https://example.com/camp-lamp,../assets/images/camp-lamp-1.jpg|../assets/images/camp-lamp-2.jpg|../assets/images/camp-lamp-3.jpg,캠핑용품|감성캠핑|캠핑랜턴
+earbuds,노이즈캔슬링 이어버드,,159000,44000,원,노이즈캔슬링 되는데 4만원대|한 번 충전에 32시간|멀티포인트 2대 동시 연결,구매는 프로필 링크에서,https://example.com/earbuds,../assets/images/earbuds-1.jpg|../assets/images/earbuds-2.jpg,이어폰|무선이어폰|가성비
+kettle,캠핑 감성 주전자,,78000,26500,원,1.2L 딱 좋은 용량|불에 올려도 되는 스테인리스|손잡이 접혀서 수납 편함,,https://example.com/kettle,../assets/images/kettle-1.jpg|../assets/images/kettle-2.jpg,캠핑용품|주전자|백패킹
